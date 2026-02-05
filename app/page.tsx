@@ -245,7 +245,7 @@ export default function App() {
                     placeholder={CONFIG.SIDEBAR.STEP_DETAIL_PLACEHOLDER}
                     value={step.detail}
                     onChange={(e) => updateStep(step.id, 'detail', e.target.value)}
-                    rows="2"
+                    rows={2}
                     className="w-full bg-transparent border-none focus:ring-0 text-sm text-slate-500 p-0 resize-none leading-relaxed placeholder:text-slate-300"
                   />
                 </div>
