@@ -14,6 +14,7 @@ import {
 
 interface Step {
   id: number;
+  stepNumber: string; // User can now edit this
   title: string;
   detail: string;
 }
@@ -51,8 +52,8 @@ const CONFIG = {
   INITIAL_DATA: {
     SOP_TITLE: 'Daily Prep: Jasmine Rice',
     STEPS: [
-      { id: 1, title: 'Wash Rice', detail: 'Rinse rice 3 times until water runs clear.' },
-      { id: 2, title: 'Water Ratio', detail: 'Use 1:1.2 ratio for jasmine rice.' }
+      { id: 1, stepNumber: '1', title: 'Wash Rice', detail: 'Rinse rice 3 times until water runs clear.' },
+      { id: 2, stepNumber: '2', title: 'Water Ratio', detail: 'Use 1:1.2 ratio for jasmine rice.' }
     ] as Step[]
   }
 };
@@ -74,7 +75,9 @@ export default function App() {
     script.async = true;
     document.head.appendChild(script);
     return () => {
-      document.head.removeChild(script);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
     };
   }, []);
 
@@ -94,7 +97,16 @@ export default function App() {
   };
 
   const addStep = () => {
-    setSteps([...steps, { id: Date.now(), title: '', detail: '' }]);
+    // Determine the next logical number based on the last step
+    const lastStep = steps[steps.length - 1];
+    const nextNum = lastStep ? (parseInt(lastStep.stepNumber) + 1).toString() : "1";
+    
+    setSteps([...steps, { 
+      id: Date.now(), 
+      stepNumber: isNaN(parseInt(nextNum)) ? "1" : nextNum, 
+      title: '', 
+      detail: '' 
+    }]);
   };
 
   const updateStep = (id: number, field: keyof Step, value: string) => {
@@ -119,7 +131,6 @@ export default function App() {
     try {
       const element = previewRef.current;
       
-      // Captured dimensions (A4 Landscape at 96 DPI)
       const dataUrl = await window.htmlToImage.toPng(element, {
         quality: 1,
         pixelRatio: 3,
@@ -232,7 +243,14 @@ export default function App() {
                     <X className="w-4 h-4" />
                   </button>
                   <div className="flex gap-3 mb-2">
-                    <span className="font-black text-[#061E30] text-lg mt-0.5">0{index + 1}</span>
+                    {/* Editable Number Input */}
+                    <input 
+                      type="text"
+                      value={step.stepNumber}
+                      onChange={(e) => updateStep(step.id, 'stepNumber', e.target.value)}
+                      className="w-10 h-8 text-center bg-white border border-slate-200 rounded-md font-black text-[#061E30] text-sm focus:ring-1 focus:ring-[#061E30] outline-none"
+                      title="Edit step number"
+                    />
                     <input 
                       type="text" 
                       placeholder={CONFIG.SIDEBAR.STEP_TITLE_PLACEHOLDER} 
@@ -319,10 +337,12 @@ export default function App() {
             <div className="w-[148.5mm] h-full p-12 flex flex-col bg-white">
               <PageHeader />
               <div className="flex-1 space-y-8">
-                {steps.map((step, index) => (
+                {steps.map((step) => (
                   <div key={step.id} className="flex gap-6 group">
-                    <div className="flex-shrink-0 w-12 h-12 bg-[#061E30] text-white flex items-center justify-center font-black text-2xl rounded-xl shadow-lg">
-                      {index + 1}
+                    <div className="flex-shrink-0 w-12 h-12 bg-[#061E30] text-white flex items-center justify-center font-black text-2xl rounded-xl shadow-lg overflow-hidden text-center leading-none">
+                      <span className={step.stepNumber.length > 2 ? "text-lg" : "text-2xl"}>
+                        {step.stepNumber || "•"}
+                      </span>
                     </div>
                     <div className="flex-1 pt-1">
                       <h4 className="text-[#061E30] font-black text-xl uppercase tracking-tight leading-none mb-3">
